@@ -1,10 +1,11 @@
-const ASCII_COLORS: &str = r##"WM$@%&#NB8E9GAmKwHDF56R0Sgpabesdhftvxzi?jIl|!*+=~-^"'`;:,."##;
+const ASCII_COLORS: &str = r##"WM$@%&#NB8E9GAmK6w5HRkbYT43V0JL7gpaesyxznocv?Ijftr1li|*=-~^`':;,. "##;
 
 pub struct Graymap {
     pub pixels: Vec<Vec<u8>>,
     pub width: u32,
     pub height: u32,
-    pub output_scale: f64
+    pub output_scale: f64,
+    pub is_invert_color: bool,
 }
 
 impl Graymap {
@@ -17,7 +18,11 @@ impl Graymap {
         for y in 0..out_height {
             let mut line = String::new();
             for x in 0..out_width {
-                let c = ASCII_COLORS.chars().nth(((self.pixels[(y as f64 / self.output_scale) as usize][(x as f64 / self.output_scale) as usize] as f64 / 256.0) * ASCII_COLORS.len() as f64) as usize).unwrap();
+                let mut ascii_index = ((self.pixels[(y as f64 / self.output_scale) as usize][(x as f64 / self.output_scale) as usize] as f64 / 256.0) * ASCII_COLORS.len() as f64) as usize;
+                if self.is_invert_color {
+                    ascii_index = ASCII_COLORS.len() - 1 - ascii_index;
+                }
+                let c = ASCII_COLORS.chars().nth(ascii_index).unwrap();
                 line.push(c);
                 line.push(c);
             }

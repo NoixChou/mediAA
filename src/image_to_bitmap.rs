@@ -1,9 +1,15 @@
 use crate::graymap::Graymap;
 
-pub fn image_to_graymap(image_path: String, output_scale: f64) -> Result<Graymap, image::ImageError> {
+pub fn image_to_graymap(image_path: String, output_scale: Option<f64>, is_invert_color: bool) -> Result<Graymap, image::ImageError> {
     let image = image::open(image_path)?.to_rgb8();
     let width = image.width();
     let height = image.height();
+    let output_scale = match output_scale {
+        Some(s) => s,
+        None => {
+            86.0 / width as f64
+        }
+    };
     
     let mut pixels = Vec::new();
     
@@ -20,6 +26,7 @@ pub fn image_to_graymap(image_path: String, output_scale: f64) -> Result<Graymap
         pixels,
         width,
         height,
-        output_scale
+        output_scale,
+        is_invert_color,
     })
 }
