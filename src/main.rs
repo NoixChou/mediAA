@@ -1,48 +1,27 @@
 mod image_to_bitmap;
 mod graymap;
+mod prog_params;
 
 use std::{env, fs};
 use std::io::Write;
-use std::ops::Add;
 
 const ERR_OPEN_OUTPUT: &str = "Failed to open output file";
 const ERR_WRITE_OUTPUT: &str = "Failed to write to output file";
 const ERR_CONVERT: &str = "Failed to convert file";
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let configuration = prog_params::MediAAConfig::create(env::args()).expect(command_usage());
     
-    let src_file_path = match args.get(1) {
+    match configuration.destination_file_path {
         None => {
-            println!("{}", command_usage());
-            return;
-        }
-        Some(p) => p.clone()
-    };
-    let mut dest_file_path = Some(src_file_path.clone().add(".txt"));
-    let mut output_scale = Option::<f64>::None;
-    let mut is_invert_color = false;
-    
-    for (i, arg) in args[2..].iter().enumerate() {
-        match &arg[0..2] {
-            "-o" => dest_file_path = Some(args.get(i + 3).expect(command_usage()).clone()),
-            "-s" => output_scale = args.get(i + 3).expect(command_usage()).clone().parse().ok(),
-            "-v" => dest_file_path = None,
-            "-i" => is_invert_color = true,
-            _ => ()
-        }
-    }
-    
-    match dest_file_path {
-        None => {
-            let lines = image_to_bitmap::image_to_graymap(src_file_path, output_scale, is_invert_color).expect(ERR_CONVERT).to_text().expect(ERR_CONVERT);
+            let lines = image_to_bitmap::image_to_graymap(configuration.source_file_path, configuration.output_scale, configuration.is_invert_color).expect(ERR_CONVERT).to_text().expect(ERR_CONVERT);
             
             for line in lines {
                 println!("{}", line);
             }
         }
         Some(dest_file_path) => {
-            let lines = image_to_bitmap::image_to_graymap(src_file_path, output_scale, is_invert_color).expect(ERR_CONVERT).to_text().expect(ERR_CONVERT);
+            let lines = image_to_bitmap::image_to_graymap(configuration.source_file_path, configuration.output_scale, configuration.is_invert_color).expect(ERR_CONVERT).to_text().expect(ERR_CONVERT);
             
             let mut dest_file = fs::File::create(dest_file_path).expect(ERR_OPEN_OUTPUT);
             
