@@ -1,37 +1,30 @@
 mod image_to_bitmap;
 mod graymap;
 mod prog_params;
+mod ascii_text;
 
-use std::{env, fs};
-use std::io::Write;
+use std::env;
 
-const ERR_OPEN_OUTPUT: &str = "Failed to open output file";
-const ERR_WRITE_OUTPUT: &str = "Failed to write to output file";
-const ERR_CONVERT: &str = "Failed to convert file";
-
-fn main() {
-    let configuration = prog_params::MediAAConfig::create(env::args()).expect(command_usage());
+fn main() -> anyhow::Result<()> {
+    let configuration = prog_params::MediAAConfig::create(env::args()).unwrap_or_else(|_| exit_with_command_usage());
+    
+    let lines = image_to_bitmap::image_to_graymap(configuration.source_file_path, configuration.output_scale, configuration.is_invert_color)?.to_text();
     
     match configuration.destination_file_path {
         None => {
-            let lines = image_to_bitmap::image_to_graymap(configuration.source_file_path, configuration.output_scale, configuration.is_invert_color).expect(ERR_CONVERT).to_text().expect(ERR_CONVERT);
-            
-            for line in lines {
-                println!("{}", line);
-            }
+            lines.print();
+            Ok(())
         }
         Some(dest_file_path) => {
-            let lines = image_to_bitmap::image_to_graymap(configuration.source_file_path, configuration.output_scale, configuration.is_invert_color).expect(ERR_CONVERT).to_text().expect(ERR_CONVERT);
-            
-            let mut dest_file = fs::File::create(dest_file_path).expect(ERR_OPEN_OUTPUT);
-            
-            for line in lines {
-                writeln!(dest_file, "{}", line).expect(ERR_WRITE_OUTPUT);
-            }
-            dest_file.flush().expect(ERR_WRITE_OUTPUT);
-            return;
+            lines.write_to_file(dest_file_path)?;
+            Ok(())
         }
     }
+}
+
+fn exit_with_command_usage() -> ! {
+    print!("{}", command_usage());
+    std::process::exit(0);
 }
 
 fn command_usage() -> &'static str {

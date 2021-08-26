@@ -20,7 +20,7 @@ impl MediAAConfig {
         for (i, arg) in args[2..].iter().enumerate() {
             match &arg[0..2] {
                 "-o" => destination_file_path = Some(args.get(i + 3).ok_or(())?.clone()),
-                "-s" => output_scale = args.get(i + 3).ok_or(())?.clone().parse().ok(),
+                "-s" => output_scale = args.get(i + 3).ok_or(())?.parse().ok(),
                 "-v" => destination_file_path = None,
                 "-i" => is_invert_color = true,
                 _ => ()

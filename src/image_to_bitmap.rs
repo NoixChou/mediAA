@@ -1,7 +1,7 @@
-use crate::graymap::Graymap;
+use crate::graymap::{Graymap, BitmapError};
 
-pub fn image_to_graymap(image_path: String, output_scale: Option<f64>, is_invert_color: bool) -> Result<Graymap, image::ImageError> {
-    let image = image::open(image_path)?.to_rgb8();
+pub fn image_to_graymap(image_path: String, output_scale: Option<f64>, is_invert_color: bool) -> Result<Graymap, BitmapError> {
+    let image = image::open(image_path).map_err(|e| BitmapError::Convert(anyhow::Error::from(e)))?.to_rgb8();
     let width = image.width();
     let height = image.height();
     let output_scale = match output_scale {
