@@ -57,7 +57,7 @@ fn main() {
 
 fn command_usage() -> &'static str {
     "\
-    usage: madiaa (source_file)
+    usage: mediaa (source_file)
               [-o output_file]
               [-s output_scale]
               [-v (output to stdout)]
